@@ -1,6 +1,2 @@
-# TESTANDO
-# TESTANDO
-# Python-Tests
-# Python
-# Python
-# Python
+# Enviroment to test my abilities in Python
+
