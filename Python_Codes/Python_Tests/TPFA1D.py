@@ -10,19 +10,21 @@ class test_TPFA(unittest.TestCase):
     def test1D_Dirichlet(self):
         # Entrada de Dados:
         n, P1, P5 = 5, 1., 0.
+        #x,y = np.meshgrid(range(n),range(1))
+        #plt.imshow(x)
 
         # Solver
-        P = solve_one_phase.pressure(n,P1,P5)
+        P = solve_one_phase.pressure(n,P1,P5) #pressões tomadas no centróide do elemento
 
         # Validação
         def P_ans(x): return 1/4*(5-x)
         for x in range(n-1):
             self.assertEqual(np.round(P[x],2),P_ans(x+1),'ValueError')
-        #plt.figure(0)
-        #plt.plot(P)
-        #plt.xlabel('x')
-        #plt.ylabel('Pressure')
-        #plt.show()
+        plt.figure(0)
+        plt.plot(P)
+        plt.xlabel('x')
+        plt.ylabel('Pressure')
+        plt.show()
 
     def test1D_bifasico(self):
         # Entrada de Dados:
@@ -31,10 +33,10 @@ class test_TPFA(unittest.TestCase):
         # Condição Inicial:
         def s(x): return np.sin(np.pi*x)
 
-        # Solver
-        #vetor = solve_two_phases.saturation(x0,xf,n,s,t0,tf,v,CFL)
+        #Solver
+        vetor = solve_two_phases.saturation(x0,xf,n,s,t0,tf,v,CFL)
 
-    def test_Buckley_Leverett(self):
+    ''' def test_Buckley_Leverett(self):
         x0,xf,n,t0,tf,tv = 0.,1.,40,0.,2.,100
         phi,Area,Qt =.2,1.,0.001# Qt em m3/dia
         CFL = .5
@@ -111,3 +113,4 @@ class test_TPFA(unittest.TestCase):
             plt.show(block=False)
             plt.show(block=False)
         #solve_two_phases.buckley_leverett(x0,xf,n,t0,tf)
+'''

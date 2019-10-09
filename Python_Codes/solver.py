@@ -45,7 +45,7 @@ class solve_two_phases:
 
         vetor = np.zeros((tv,n)) #inicializing answer vector
         vetor[0,] = S #em t = t0 = 0
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(1)
         line, = plt.plot(x, S, 'r-')
         ax.set_xlim(-1, 1)
         ax.set_ylim(-1, 1)
