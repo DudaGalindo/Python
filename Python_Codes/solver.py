@@ -5,24 +5,30 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class solve_one_phase:
-
-    def transmissibility(n):
+    def permeability(k,n):
+        for i in range(0,n-1):
+            if k[i] != k[i+1]:
+                k[i] = 2*k[i+1]*k[i-1]/(k[i+1]+k[i-1]) #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
+        return k
+    def transmissibility(n,k):
         T = np.zeros((n,n))
         T[0,0] = 1
         T[n-1,n-1] = 1
         # Matriz de transmissibilidade --normalizada
         for i in range(1,n-1):
             #t = K[i,i]/h
-            T[i,i] = 2
-            T[i,i+1] = -1
-            T[i,i-1] = -1
+            T[i,i] = -1*(k[i]+k[i-1])
+            T[i,i+1] = 1*k[i]
+            T[i,i-1] = 1*k[i-1]
         return T
 
-    def pressure(n,P1,Pn):
+    def pressure(n,P1,Pn,k):
         q = np.zeros(n)
         q[0] = P1; q[n-1] = Pn  # conhecidos - primeira e quinta linha de [T] determinadas
+        k = solve_one_phase.permeability(k,n)
         T = np.zeros((n,n))
-        T = solve_one_phase.transmissibility(n)
+        T = solve_one_phase.transmissibility(n,k)
+        print(T)
         P = np.matmul(np.linalg.inv(T),q)
         return P
 
