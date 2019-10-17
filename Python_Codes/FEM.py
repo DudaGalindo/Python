@@ -140,8 +140,18 @@ class Viga:
         u = np.matmul(Kg,Fg.T)
         return u
 
-    def FatorForma(xe,xe1,xe2):
+    def FatorForma(x):
         def N1(xe,xe1,xe2):return 1 - 3*((xe-xe1)/(xe2-xe1))**2 + 2*((xe-xe1)/(xe2-xe1))**3
-        def N2(xe,xe1,xe2):return -3*(xe-xe1)*(1-(xe-xe1)/(xe2-xe1))**2
+        def N2(xe,xe1,xe2):return -1*(xe-xe1)*(1-(xe-xe1)/(xe2-xe1))**2
         def N3(xe,xe1,xe2):return 3*((xe-xe1)/(xe2-xe1))**2 - 2*((xe-xe1)/(xe2-xe1))**3
         def N4(xe,xe1,xe2):return -(xe-xe1)*(((xe-xe1)/(xe2-xe1))**2 - (xe-xe1)/(xe2-xe1))
+            
+        plt.figure(0)
+        plt.plot()
+        plt.xlabel('x')
+        plt.ylabel('Pressure')
+        plt.show()
+
+    def Fletor():
+
+    def Cortante():
