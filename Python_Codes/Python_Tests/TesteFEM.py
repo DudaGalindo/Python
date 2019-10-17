@@ -48,7 +48,7 @@ class Test_FEM(unittest.TestCase):
         x = np.linspace(0,2.,n_el+1);
 
         Fc = np.array([-50E3,50E3])
-        xFc = np.array([4,13])
+        xFc = np.array([4,12])
 
         cf = 0;
 
@@ -58,4 +58,4 @@ class Test_FEM(unittest.TestCase):
         print(u)
         u_ans = [0.,0.,1.5025E-5,-8.4188E-5,3.0318E-5,3.3573E-5,2.7515E-5,6.7402E-5,1.7364E-20,1.3429E-4,-2.7615E-5,6.7402E-5,-3.0318E-5,-3.3573E-5,-1.5025E-5,-8.4188E-5,0.,0.]
         for i in range(len(u)):
-            self.assertAlmostEqual(u[i],u_ans[i],10,'ValueError: Failed')
+            self.assertAlmostEqual(u[i],u_ans[i],3,'ValueError: Failed')
