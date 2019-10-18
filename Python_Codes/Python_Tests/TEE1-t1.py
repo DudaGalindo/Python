@@ -10,9 +10,8 @@ class test_trabalho(unittest.TestCase):
     def testA(self):
         # Entrada de Dados:
         n, P1, Pn, k = 6, 300., 50., 100
-        #x,y = np.meshgrid(range(n),range(1))
-        #plt.imshow(x)
         k = k*np.ones(n)
+        
         # Solver
         P = solve_one_phase.pressure(n,P1,Pn,k) #pressões tomadas no centróide do elemento
 
