@@ -142,53 +142,80 @@ class Viga:
         Kg,Fg = general.initialize(ngl_tot)
         Kg,Fg = Viga.Global(E,I,cf,Fc,x,Kg,Fg,n_el,ngl_el,conec,q)
         Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
-        print(Kg,Fg)
         Kg = np.linalg.inv(Kg)
         u = np.matmul(Kg,Fg.T)
         return u
 
-    def Plots(x,u,L,n_el):
+    def Plots(x,u,L,n_el,E,I):
 
         n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
         ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
         conec = general.conect(ngl_tot,n_el,ngl_el)
 
-        xe = sp.Symbol('xe');xe1 = sp.Symbol('xe'); xe2 = sp.Symbol('xe2')
+        xe = sp.Symbol('xe'); xe1 = sp.Symbol('xe'); xe2 = sp.Symbol('xe2')
 
         def N1(xe,xe1,xe2):return 1 - 3*((xe-xe1)/(xe2-xe1))**2 + 2*((xe-xe1)/(xe2-xe1))**3
         def N2(xe,xe1,xe2):return -1*(xe-xe1)*(1-(xe-xe1)/(xe2-xe1))**2
         def N3(xe,xe1,xe2):return 3*((xe-xe1)/(xe2-xe1))**2 - 2*((xe-xe1)/(xe2-xe1))**3
         def N4(xe,xe1,xe2):return -(xe-xe1)*(((xe-xe1)/(xe2-xe1))**2 - (xe-xe1)/(xe2-xe1))
 
-        d1N1 = sp.Derivative(N1(xe,xe1,xe2),xe)
-        d1N2 = sp.Derivative(N2(xe,xe1,xe2),xe)
-        d1N3 = sp.Derivative(N3(xe,xe1,xe2),xe)
-        d1N4 = sp.Derivative(N4(xe,xe1,xe2),xe)
+        def d1N1(xe,xe1,xe2):return sp.Derivative(N1(xe,xe1,xe2),xe).doit()
+        def d1N2(xe,xe1,xe2):return sp.Derivative(N2(xe,xe1,xe2),xe).doit()
+        def d1N3(xe,xe1,xe2):return sp.Derivative(N3(xe,xe1,xe2),xe).doit()
+        def d1N4(xe,xe1,xe2):return sp.Derivative(N4(xe,xe1,xe2),xe).doit()
 
-        d2N1 = sp.Derivative(d1N1,xe)
-        d2N2 = sp.Derivative(d1N2,xe)
-        d2N3 = sp.Derivative(d1N3,xe)
-        d2N4 = sp.Derivative(d1N4,xe)
+        def d2N1(xe,xe1,xe2):return sp.Derivative(d1N1(xe,xe1,xe2),xe).doit()
+        def d2N2(xe,xe1,xe2):return sp.Derivative(d1N2(xe,xe1,xe2),xe).doit()
+        def d2N3(xe,xe1,xe2):return sp.Derivative(d1N3(xe,xe1,xe2),xe).doit()
+        def d2N4(xe,xe1,xe2):return sp.Derivative(d1N4(xe,xe1,xe2),xe).doit()
 
-        d3N1 = sp.Derivative(d2N1,xe)
-        d3N2 = sp.Derivative(d2N2,xe)
-        d3N3 = sp.Derivative(d2N3,xe)
-        d3N4 = sp.Derivative(d2N4   ,xe)
+        def d3N1(xe,xe1,xe2):return sp.Derivative(d2N1(xe,xe1,xe2),xe).doit()
+        def d3N2(xe,xe1,xe2):return sp.Derivative(d2N2(xe,xe1,xe2),xe).doit()
+        def d3N3(xe,xe1,xe2):return sp.Derivative(d2N3(xe,xe1,xe2),xe).doit()
+        def d3N4(xe,xe1,xe2):return sp.Derivative(d2N4(xe,xe1,xe2),xe).doit()
 
         #we = np.zeros(10*n_el)
         end = 0
         n = 50
-        we = np.zeros(n*n_el)
+        we = np.zeros(n*n_el); Me = np.zeros(n*n_el); Ve = np.zeros(n*n_el)
         for el in range(0,n_el):
             xe1 = x[el]
             xe2 = x[el+1]
             xen = xe1
+
             for i in range(end,n*(el+1)):
                 we[i] = -(N1(xen,xe1,xe2)*u[conec[el,0]-1]+N2(xen,xe1,xe2)*u[conec[el,1]-1]+N3(xen,xe1,xe2)*u[conec[el,2]-1]+N4(xen,xe1,xe2)*u[conec[el,3]-1])
-                Me[i] = -E*I*(d2N1.doit().subs({xe:xen})
+                Me[i] = -E*I*(d2N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1] +
+                d2N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1] + d2N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1] +
+                d2N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
+                Ve[i] = -E*I*(d3N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1] +
+                d3N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1] + d3N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1] +
+                d3N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
                 xen = xen + (xe2-xe1)/(n-1)
             end = n*(el+1)
-        return we
+
+        ##Ploting:
+        xe = np.linspace(0,L,n*n_el)
+
+        plt.figure(0)
+        plt.plot(xe,we)
+        plt.xlabel('x')
+        plt.ylabel('we')
+        plt.title('deslocamento')
+        plt.show()
+
+        plt.figure(1)
+        plt.plot(xe,Me)
+        plt.xlabel('x')
+        plt.ylabel('Momento Fletor')
+        plt.show()
+
+        plt.figure(2)
+        plt.plot(xe,Ve)
+        plt.xlabel('x')
+        plt.ylabel('Esforço Cortante')
+        plt.show()
+
 
 
 
