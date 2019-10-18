@@ -9,12 +9,12 @@ import unittest
 class test_TPFA(unittest.TestCase):
     def test1D_Dirichlet(self):
         # Entrada de Dados:
-        n, P1, P5 = 5, 1., 0.
+        n, P1, P5, k = 5, 1., 0.,1
         #x,y = np.meshgrid(range(n),range(1))
         #plt.imshow(x)
-
+        k = 1*np.ones(n)
         # Solver
-        P = solve_one_phase.pressure(n,P1,P5) #pressões tomadas no centróide do elemento
+        P = solve_one_phase.pressure(n,P1,P5,k) #pressões tomadas no centróide do elemento
 
         # Validação
         def P_ans(x): return 1/4*(5-x)
