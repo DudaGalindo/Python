@@ -1,5 +1,8 @@
 import numpy as np
 import math
+import sympy as sp
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 #from scipy.integrate import quad
 
 class general:
@@ -92,6 +95,12 @@ class Barra:
 
 class Viga:
 
+    def init(n_el):
+        n_nos_el = 2*np.ones(n_el) #número de nós por elemento
+        n_nos_el = n_nos_el.astype(int)
+        n_nos_tot = int(sum(n_nos_el) - (n_el-1))   #número total de nós da estrutura
+        ngl_no = 2*np.ones(n_nos_tot) #numero de gl por nó
+        return n_nos_el,n_nos_tot,ngl_no
 
     def Elem(E,I,he,cf,q,x1,x2):
         k1 = np.array([[6.,-3.*he,-6.,-3.*he],[-3.*he,2.*he**2,3.*he,he**2],[-6.,3.*he,6.,3*he],[-3*he,he**2,3*he,2*he**2]])
@@ -123,10 +132,7 @@ class Viga:
         return Kg, Fg
 
     def deslocamento(n_el,x,I,E,F,xF,q,xCC,valor_CC,cf):
-        n_nos_el = 2*np.ones(n_el) #número de nós por elemento
-        n_nos_el = n_nos_el.astype(int)
-        n_nos_tot = int(sum(n_nos_el) - (n_el-1))   #número total de nós da estrutura
-        ngl_no = 2*np.ones(n_nos_tot) #numero de gl por nó
+        n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
         ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
 
         Fc = np.zeros(ngl_tot)
@@ -136,22 +142,57 @@ class Viga:
         Kg,Fg = general.initialize(ngl_tot)
         Kg,Fg = Viga.Global(E,I,cf,Fc,x,Kg,Fg,n_el,ngl_el,conec,q)
         Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
+        print(Kg,Fg)
         Kg = np.linalg.inv(Kg)
         u = np.matmul(Kg,Fg.T)
         return u
 
-    def FatorForma(x):
+    def Plots(x,u,L,n_el):
+
+        n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
+        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
+        conec = general.conect(ngl_tot,n_el,ngl_el)
+
+        xe = sp.Symbol('xe');xe1 = sp.Symbol('xe'); xe2 = sp.Symbol('xe2')
+
         def N1(xe,xe1,xe2):return 1 - 3*((xe-xe1)/(xe2-xe1))**2 + 2*((xe-xe1)/(xe2-xe1))**3
         def N2(xe,xe1,xe2):return -1*(xe-xe1)*(1-(xe-xe1)/(xe2-xe1))**2
         def N3(xe,xe1,xe2):return 3*((xe-xe1)/(xe2-xe1))**2 - 2*((xe-xe1)/(xe2-xe1))**3
         def N4(xe,xe1,xe2):return -(xe-xe1)*(((xe-xe1)/(xe2-xe1))**2 - (xe-xe1)/(xe2-xe1))
-            
-        plt.figure(0)
-        plt.plot()
-        plt.xlabel('x')
-        plt.ylabel('Pressure')
-        plt.show()
 
-    def Fletor():
+        d1N1 = sp.Derivative(N1(xe,xe1,xe2),xe)
+        d1N2 = sp.Derivative(N2(xe,xe1,xe2),xe)
+        d1N3 = sp.Derivative(N3(xe,xe1,xe2),xe)
+        d1N4 = sp.Derivative(N4(xe,xe1,xe2),xe)
 
-    def Cortante():
+        d2N1 = sp.Derivative(d1N1,xe)
+        d2N2 = sp.Derivative(d1N2,xe)
+        d2N3 = sp.Derivative(d1N3,xe)
+        d2N4 = sp.Derivative(d1N4,xe)
+
+        d3N1 = sp.Derivative(d2N1,xe)
+        d3N2 = sp.Derivative(d2N2,xe)
+        d3N3 = sp.Derivative(d2N3,xe)
+        d3N4 = sp.Derivative(d2N4   ,xe)
+
+        #we = np.zeros(10*n_el)
+        end = 0
+        n = 50
+        we = np.zeros(n*n_el)
+        for el in range(0,n_el):
+            xe1 = x[el]
+            xe2 = x[el+1]
+            xen = xe1
+            for i in range(end,n*(el+1)):
+                we[i] = -(N1(xen,xe1,xe2)*u[conec[el,0]-1]+N2(xen,xe1,xe2)*u[conec[el,1]-1]+N3(xen,xe1,xe2)*u[conec[el,2]-1]+N4(xen,xe1,xe2)*u[conec[el,3]-1])
+                Me[i] = -E*I*(d2N1.doit().subs({xe:xen})
+                xen = xen + (xe2-xe1)/(n-1)
+            end = n*(el+1)
+        return we
+
+
+
+        #def d1N1(xe,xe1,xe2): return (6*(xe-xe1)**2)/((xe2-xe1)**3) - (6*(xe-xe1)/(he**2)
+        #def d1N2(xe,xe1,xe2): return (12*(xe-xe1))/(xe2-xe1)**
+        #plt.figure(0)
+        #plt.plot()

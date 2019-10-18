@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from ..FEM import Viga, Barra, general
+import matplotlib.pyplot as plt
 import unittest
 
 class Test_FEM(unittest.TestCase):
@@ -56,6 +57,16 @@ class Test_FEM(unittest.TestCase):
         valor_CCdir = np.array([0, 0, 0, 0])
         u = Viga.deslocamento(n_el,x,I,E,Fc,xFc,q,xCC_dir,valor_CCdir,cf) #1GL
         print(u)
-        u_ans = [0.,0.,1.5025E-5,-8.4188E-5,3.0318E-5,3.3573E-5,2.7515E-5,6.7402E-5,1.7364E-20,1.3429E-4,-2.7615E-5,6.7402E-5,-3.0318E-5,-3.3573E-5,-1.5025E-5,-8.4188E-5,0.,0.]
+        u_ans = np.array([0.,0.,1.5025E-5,-8.4188E-5,3.0318E-5,3.3573E-5,2.7515E-5,6.7402E-5,1.7364E-20,1.3429E-4,-2.7615E-5,6.7402E-5,-3.0318E-5,-3.3573E-5,-1.5025E-5,-8.4188E-5,0.,0.])
         for i in range(len(u)):
             self.assertAlmostEqual(u[i],u_ans[i],3,'ValueError: Failed')
+
+    #    xe = np.linspace(0,2.,10*(n_el  ))
+        we = Viga.Plots(x,u,L,n_el)
+        print(we)
+        xe = np.linspace(0,L,len(we))
+        plt.figure(0)
+        plt.plot(xe,we)
+        plt.xlabel('x')
+        plt.ylabel('we')
+        plt.show()
