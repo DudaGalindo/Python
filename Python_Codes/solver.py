@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-class solve_one_phase:
+class solve_one_phase1D:
     def permeability(k,n):
         for i in range(0,n-1):
             if k[i] != k[i+1]:
@@ -25,11 +25,35 @@ class solve_one_phase:
     def pressure(n,P1,Pn,k):
         q = np.zeros(n)
         q[0] = P1; q[n-1] = Pn  # conhecidos - primeira e quinta linha de [T] determinadas
-        k = solve_one_phase.permeability(k,n)
-        T = np.zeros((n,n))
-        T = solve_one_phase.transmissibility(n,k)
-        print(T)
+        k = solve_one_phase1D.permeability(k,n)
+        T = solve_one_phase1D.transmissibility(n,k)
         P = np.matmul(np.linalg.inv(T),q)
+        return P
+
+class solve_one_phase2D:
+
+    def transmissibility(nx,ny,kx,ky):
+        T = np.zeros((nx*ny,nx*ny))
+        T[0,0] = 1
+        T[nx*ny-1,nx*ny-1] = 1
+        # Matriz de transmissibilidade --normalizada
+        for i in range(1,nx*nx-1):
+            T[i,i] = -1*(kx[i]+kx[i-1]) -1*(ky[i]+ky[i-1])
+            T[i,i+1] = 1*kx[i]
+            T[i,i-1] = 1*kx[i-1]
+            if i<nx*nx-6: T[i,i+6] = 1*ky[i]
+            if i>6: T[i,i-6] = 1*ky[i-1]
+        return T
+
+
+    def pressure(nx,ny,P1,Pn,kx,ky):
+        q = np.zeros(nx*ny)
+        q[0] = P1; q[nx*ny-1] = Pn
+        kx = solve_one_phase1D.permeability(kx,nx)
+        ky = solve_one_phase1D.permeability(ky,ny)
+        T = solve_one_phase2D.transmissibility(nx,ny,kx,ky)
+        print(T)
+        P = np.matmul(np.linalg.inv(T),q.T)
         return P
 
 class solve_two_phases:
