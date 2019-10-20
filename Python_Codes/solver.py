@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 class solve_one_phase1D:
-    def permeability(k,n):
-        for i in range(0,n-1):
+    def permeability(k):
+        for i in range(0,len(k)-1):
             if k[i] != k[i+1]:
-                k[i] = 2*k[i+1]*k[i-1]/(k[i+1]+k[i-1]) #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
+                if k[i]!=0 and k[i+1]!=0:
+                    k[i] = 2*k[i+1]*k[i]/(k[i+1]+k[i]) #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
         return k
     def transmissibility(n,k):
         T = np.zeros((n,n))
@@ -25,12 +26,18 @@ class solve_one_phase1D:
     def pressure(n,P1,Pn,k):
         q = np.zeros(n)
         q[0] = P1; q[n-1] = Pn  # conhecidos - primeira e quinta linha de [T] determinadas
-        k = solve_one_phase1D.permeability(k,n)
+        k = solve_one_phase1D.permeability(k)
         T = solve_one_phase1D.transmissibility(n,k)
         P = np.matmul(np.linalg.inv(T),q)
         return P
 
 class solve_one_phase2D:
+    def permeability(k):
+        for i in range(0,len(k)-4):
+            if k[i] != k[i+4]:
+                if k[i]!=0 and k[i+4]!=0:
+                    k[i] = 2*k[i+4]*k[i]/(k[i+4]+k[i]) #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
+        return k
 
     def transmissibility(nx,ny,kx,ky):
         T = np.zeros((nx*ny,nx*ny))
@@ -38,21 +45,19 @@ class solve_one_phase2D:
         T[nx*ny-1,nx*ny-1] = 1
         # Matriz de transmissibilidade --normalizada
         for i in range(1,nx*nx-1):
-            T[i,i] = -1*(kx[i]+kx[i-1]) -1*(ky[i]+ky[i-1])
-            T[i,i+1] = 1*kx[i]
-            T[i,i-1] = 1*kx[i-1]
-            if i<nx*nx-6: T[i,i+6] = 1*ky[i]
-            if i>6: T[i,i-6] = 1*ky[i-1]
+            T[i,i] = -1*(kx[i+1]+kx[i]) -1*(ky[i+nx]+ky[i])
+            T[i,i+1] = 1*kx[i+1]
+            T[i,i-1] = 1*kx[i]
+            if i < (nx*nx-4): T[i,i+4] = 1*ky[i+nx]
+            if i > 4: T[i,i-4] = 1*ky[i]
         return T
 
 
     def pressure(nx,ny,P1,Pn,kx,ky):
         q = np.zeros(nx*ny)
         q[0] = P1; q[nx*ny-1] = Pn
-        kx = solve_one_phase1D.permeability(kx,nx)
-        ky = solve_one_phase1D.permeability(ky,ny)
         T = solve_one_phase2D.transmissibility(nx,ny,kx,ky)
-        print(T)
+
         P = np.matmul(np.linalg.inv(T),q.T)
         return P
 
