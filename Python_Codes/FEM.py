@@ -6,6 +6,9 @@ import matplotlib.animation as animation
 #from scipy.integrate import quad
 
 class general:
+    def n_nosTOTAL(n_nos_el,n_el):
+        n_nos_total = int(sum(n_nos_el) - (n_el-1))
+        return n_nos_total
 
     def ngl(ngl_no,n_nos_el,n_nos_tot):
         ngl_el = ngl_no*n_nos_el
@@ -60,7 +63,6 @@ class Barra:
 
         Kel = (E/he**2)*integralAdx*k    #quad(A,x1,x2)
         Fel = f*he*fel
-
         return Kel,Fel
 
     def Global(n_el,n_nos_el,x,integralAdx,E,conec,Fc,f,Kg,Fg):
@@ -79,8 +81,8 @@ class Barra:
         Fg = Fg + Fc
         return Kg, Fg
 
-    def deslocamento(n_nos_tot,n_el,n_nos_el,x,integralAdx,E,conec,Fc,f,xCC,valor_CC):
-
+    def deslocamento(n_el,n_nos_el,x,integralAdx,E,conec,Fc,f,xCC,valor_CC):
+        n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el) #número total de nós da estrutura
         ngl_no = 1*np.ones(n_el)
         ngl_no = ngl_no.astype(int)
         #ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el,n_nos_tot)
@@ -113,11 +115,10 @@ class Viga:
         q2 = q(x2)
         f = (q1+q2)/2
         Fel = f*he/12*fel
-
         return Kel, Fel
 
-    def Global(E,I,cf,Fc,x,Kg,Fg,n_el,ngl_el,conec,q):
-
+    def Global(E,I,cf,Fc,L,Kg,Fg,n_el,ngl_el,conec,q):
+        x = np.linspace(0,L,n_el+1);
         for el in range(0,n_el):
             he = abs(x[el] - x[el+1])
             Kel, Fel = Viga.Elem(E,I,he,cf,q,x[el],x[el+1])
@@ -136,7 +137,8 @@ class Viga:
         ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
 
         Fc = np.zeros(ngl_tot)
-        Fc[xF[0]] = F[0]; Fc[xF[1]] = F[1]
+        for i in range(len(xF)):
+            Fc[xF[i]] = F[i]
 
         conec = general.conect(ngl_tot,n_el,ngl_el)
         Kg,Fg = general.initialize(ngl_tot)
@@ -178,6 +180,7 @@ class Viga:
         end = 0
         n = 50
         we = np.zeros(n*n_el); Me = np.zeros(n*n_el); Ve = np.zeros(n*n_el)
+
         for el in range(0,n_el):
             xe1 = x[el]
             xe2 = x[el+1]
@@ -215,6 +218,54 @@ class Viga:
         plt.xlabel('x')
         plt.ylabel('Esforço Cortante')
         plt.show()
+
+class Trelica:
+    def Elem(A,E,L,beta,he):
+        c = math.cos(beta); s = math.sin(beta)
+        k = np.array([[c*c, c*s, -c*c, -c*s],[c*s, s*s, -c*s, -s*s],[-c*c, -c*s, c*c, c*s],[-c*s, -s*s, c*s, s*s]])
+        Kel = A*E/he*k
+        return Kel
+
+    def Melem(rho,A,L,beta):
+        c = math.cos(beta); s = math.sin(beta)
+        #matriz de massa consistente:
+        m = np.array([[2*c*c,2*c*s, c*c, c*s],[2*c*s, 2*s*s, c*s, s*s],[c*c, c*s, 2*c*c, 2*c*s], [c*s, s*s, 2*c*s, 2*s*s]])
+        Mel = rho*A*L/6*m
+        return Mel
+
+    def Global(conec,n_el,coord,ngl_el,A,E,Kg):
+        for el in range(0,n_el):
+            L = math.sqrt((coord[el+1,1] - coord[el,1])**2+(coord[el+1,0] - coord[el,0])**2)
+            he = L
+            if (coord[el+1,0] - coord[el,0])==0:
+                beta = 2*atan(1)
+            else: beta = math.atan(abs(coord[el+1,1] - coord[el,1])/abs(coord[el+1,0] - coord[el,0]))
+            Kel = Trelica.Elem(A[el],E[el],L,beta,he)
+            for i in range(0,ngl_el):
+                ig = conec[el,i] - 1
+                for j in range(0,ngl_el):
+                    jg = conec[el,j] - 1
+                    Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
+        return Kg
+
+    def deslocamento(coord,n_nos_tot,F,xF,xCC,valor_CC,n_el,A,E):
+        n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
+        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
+        conec = general.conect(ngl_tot,n_el,ngl_el)
+
+        Kg,Fg = general.initialize(ngl_tot)
+
+        for i in range(len(xF)):
+            Fg[xF[i]] = F[i]
+
+        Kg = Trelica.Global(conec,n_el,coord,ngl_el,A,E,Kg)
+        Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
+        print(Fg)
+        Kg = np.linalg.inv(Kg)
+        u = np.matmul(Kg,Fg.T)
+        return u
+
+
 
 
 
