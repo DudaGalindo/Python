@@ -11,9 +11,9 @@ class test_trabalho(unittest.TestCase):
         # Entrada de Dados:
         n, P1, Pn, k = 6, 300., 50., 100
         k = k*np.ones(n)
-
+        xPn = np.array([1,n])
         # Solver
-        P = solve_one_phase1D.pressure(n,P1,Pn,k) #pressões tomadas no centróide do elemento
+        P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k) #pressões tomadas no centróide do elemento
 
         # Validação
         def P_ans(x): return 300-250/5*x
@@ -28,7 +28,8 @@ class test_trabalho(unittest.TestCase):
     def testB(self):
         n, P1, Pn, k1, k2 = 6,300,50,100,50
         k = np.array([k1,k1,k1,k2,k2,k2])
-        P = solve_one_phase1D.pressure(n,P1,Pn,k)
+        xPn = np.array([1,n])
+        P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
         print(P)
         '''print(P)
         plt.figure(0)
@@ -40,7 +41,8 @@ class test_trabalho(unittest.TestCase):
     def testC(self):
         n, P1, Pn, k1, k2, k3 = 6,300,50,100,50,10
         k = np.array([k1,k1,k2,k2,k3,k3])
-        P = solve_one_phase1D.pressure(n,P1,Pn,k)
+        xPn = np.array([1,n])
+        P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
 
         print(P)
         '''plt.figure(0)
@@ -50,8 +52,14 @@ class test_trabalho(unittest.TestCase):
         plt.show()'''
 
     def testD(self):
-        #FAZER
-        d = 2
+        nx,P1,qn,k,L = 6, 300.,250.,100,100
+        qNewman = 250
+        xNewman = nx
+        xP = np.array([1])
+        k = k*np.ones(nx); k[nx-1] = 0
+        P = solve_one_phase1D.pressure_Newmann(nx,P1,xP,qNewman,xNewman,k,L)
+        print(P)
+
     def testE(self):
         nx,ny, P1, Pn, k = 4, 4, 300., 50., 100
         kx = k*np.ones(nx*nx+1)

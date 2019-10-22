@@ -31,7 +31,7 @@ class general:
         conec = conec.astype(int)
         return conec
 
-    def Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg):
+    def Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg): ##acho que tem como otimizar
         CC = np.zeros(ngl_tot)
 
         for i in range(0,len(xCC)):
@@ -47,8 +47,8 @@ class general:
                         if CC[j]==0:
                             Fg[j] = Fg[j] - Kg[j,i]*Fg[i]
                             Kg[j,i] = 0
-
         return Kg,Fg
+        
 class Barra:
 
     def Elem(n_nos_el,integralAdx,E,he,f):
@@ -117,8 +117,7 @@ class Viga:
         Fel = f*he/12*fel
         return Kel, Fel
 
-    def Global(E,I,cf,Fc,L,Kg,Fg,n_el,ngl_el,conec,q):
-        x = np.linspace(0,L,n_el+1);
+    def Global(E,I,cf,Fc,x,Kg,Fg,n_el,ngl_el,conec,q):
         for el in range(0,n_el):
             he = abs(x[el] - x[el+1])
             Kel, Fel = Viga.Elem(E,I,he,cf,q,x[el],x[el+1])
@@ -220,7 +219,20 @@ class Viga:
         plt.show()
 
 class Trelica:
-    def Elem(A,E,L,beta,he):
+    def conect(n_el,ngl_tot,ngl_el,coord_no,conec_el): ##TENTAR OTIMIZAR
+        conec = np.zeros([n_el,ngl_el])
+        vetor = np.linspace(1,ngl_tot,ngl_tot)
+        i = 0
+        for el in range(0,n_el):
+            for No in range(0,ngl_el):
+                if No == 0 or No == 1: i = 0
+                if No == 0 or No == 2: c = 0
+                if No == 1 or No == 3: c = 1
+                if No == 2 or No == 3: i = 1
+                conec[el,No] = vetor[(conec_el[el,i]-1)*2 + c]
+        return conec
+
+    def Elem(A,E,beta,he):
         c = math.cos(beta); s = math.sin(beta)
         k = np.array([[c*c, c*s, -c*c, -c*s],[c*s, s*s, -c*s, -s*s],[-c*c, -c*s, c*c, c*s],[-c*s, -s*s, c*s, s*s]])
         Kel = A*E/he*k
@@ -233,44 +245,66 @@ class Trelica:
         Mel = rho*A*L/6*m
         return Mel
 
-    def Global(conec,n_el,coord,ngl_el,A,E,Kg):
+    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,Kg):
         for el in range(0,n_el):
-            L = math.sqrt((coord[el+1,1] - coord[el,1])**2+(coord[el+1,0] - coord[el,0])**2)
+            No1 = int(conec_el[el,0])
+            No2 = int(conec_el[el,1])
+            L = math.sqrt((coord_no[No2-1,1] - coord_no[No1-1,1])**2+(coord_no[No2-1,0] - coord_no[No1-1,0])**2)
             he = L
-            if (coord[el+1,0] - coord[el,0])==0:
-                beta = 2*atan(1)
-            else: beta = math.atan(abs(coord[el+1,1] - coord[el,1])/abs(coord[el+1,0] - coord[el,0]))
-            Kel = Trelica.Elem(A[el],E[el],L,beta,he)
+            if (coord_no[No2-1,0] - coord_no[No1-1,0])==0:
+                beta = 2*math.atan(1)
+            else: beta = math.atan((coord_no[No2-1,1] - coord_no[No1-1,1])/(coord_no[No2-1,0] - coord_no[No1-1,0]))
+            Kel = Trelica.Elem(A[el],E[el],beta,he)
+
             for i in range(0,ngl_el):
-                ig = conec[el,i] - 1
+                ig = int(conec[el,i] - 1)
                 for j in range(0,ngl_el):
-                    jg = conec[el,j] - 1
+                    jg = int(conec[el,j] - 1)
                     Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
         return Kg
 
-    def deslocamento(coord,n_nos_tot,F,xF,xCC,valor_CC,n_el,A,E):
-        n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
+    def deslocamento(coord_no,conec_el,n_nos_tot,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E):
+        ngl_no = 2*np.ones(n_nos_tot)
         ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
-        conec = general.conect(ngl_tot,n_el,ngl_el)
+
+        conec = Trelica.conect(n_el,ngl_tot,ngl_el,coord_no,conec_el)
 
         Kg,Fg = general.initialize(ngl_tot)
 
         for i in range(len(xF)):
             Fg[xF[i]] = F[i]
 
-        Kg = Trelica.Global(conec,n_el,coord,ngl_el,A,E,Kg)
+        Kg = Trelica.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,Kg)
         Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
-        print(Fg)
         Kg = np.linalg.inv(Kg)
         u = np.matmul(Kg,Fg.T)
         return u
 
+class Frame:
+    def Elem(A,E,beta,he):
+        #definir os "an"
+        kel = np.array([[a3,a4,a5,-a3,-a4,a5],[a4,a6,a7,-a4,-a6,a7],[a5,a7,a1,-a5,-a7,a2],[-a3,-a4,-a5,a3,a4,-a5],
+        [-a4,-a6,-a7,a4,a6,-a7],[a5,a7,a2,-a5,-a7,a1]])
 
+        return Kel
+    def Melem(rho,A,L,beta):
+        #matriz de massa consistente:
+        return Mel
 
+    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,Kg):
+        for el in range(0,n_el):
+            No1 = int(conec_el[el,0])
+            No2 = int(conec_el[el,1])
+            L = math.sqrt((coord_no[No2-1,1] - coord_no[No1-1,1])**2+(coord_no[No2-1,0] - coord_no[No1-1,0])**2)
+            he = L
+            if (coord_no[No2-1,0] - coord_no[No1-1,0])==0:
+                beta = 2*math.atan(1)
+            else: beta = math.atan((coord_no[No2-1,1] - coord_no[No1-1,1])/(coord_no[No2-1,0] - coord_no[No1-1,0]))
+            Kel = Frame.Elem(A[el],E[el],beta,he)
+            for i in range(0,ngl_el):
+                ig = int(conec[el,i] - 1)
+                for j in range(0,ngl_el):
+                    jg = int(conec[el,j] - 1)
+                    Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
 
-
-
-        #def d1N1(xe,xe1,xe2): return (6*(xe-xe1)**2)/((xe2-xe1)**3) - (6*(xe-xe1)/(he**2)
-        #def d1N2(xe,xe1,xe2): return (12*(xe-xe1))/(xe2-xe1)**
-        #plt.figure(0)
-        #plt.plot()
+        return Kg
