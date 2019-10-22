@@ -11,7 +11,8 @@ class solve_one_phase1D:
                 if k[i]!=0 and k[i+1]!=0:
                     k[i] = 2*k[i+1]*k[i]/(k[i+1]+k[i]) #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
         return k
-    def transmissibility(n,k,xP):
+
+    def transmissibility(n,k,xP): #tentar otimizar usando a matriz esparsa do scipy
         T = np.zeros((n,n))
         for i in range(0,len(xP)):
             T[xP[i]-1,xP[i]-1] = 1
@@ -19,11 +20,10 @@ class solve_one_phase1D:
         # Matriz de transmissibilidade --normalizada
         nl = n-1; init = 1
         if len(xP)==1:
-            if xP[0] == 1: init = 1;nl=n
+            if xP[0] == 1: init = 1; nl=n
             if xP[0] == n: init = 0
 
         for i in range(init,nl):
-            #t = K[i,i]/h
             T[i,i] = -1*(k[i]+k[i-1])
             if i+1 < n:T[i,i+1] = 1*k[i] #quando não tenho CCNewman
             T[i,i-1] = 1*k[i-1]

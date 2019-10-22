@@ -48,7 +48,7 @@ class general:
                             Fg[j] = Fg[j] - Kg[j,i]*Fg[i]
                             Kg[j,i] = 0
         return Kg,Fg
-        
+
 class Barra:
 
     def Elem(n_nos_el,integralAdx,E,he,f):
@@ -222,14 +222,12 @@ class Trelica:
     def conect(n_el,ngl_tot,ngl_el,coord_no,conec_el): ##TENTAR OTIMIZAR
         conec = np.zeros([n_el,ngl_el])
         vetor = np.linspace(1,ngl_tot,ngl_tot)
-        i = 0
         for el in range(0,n_el):
+            i = 0
             for No in range(0,ngl_el):
-                if No == 0 or No == 1: i = 0
-                if No == 0 or No == 2: c = 0
-                if No == 1 or No == 3: c = 1
-                if No == 2 or No == 3: i = 1
+                i = np.sign(No-i); c = np.sign(abs(2-No)*No)
                 conec[el,No] = vetor[(conec_el[el,i]-1)*2 + c]
+                i = i+1
         return conec
 
     def Elem(A,E,beta,he):

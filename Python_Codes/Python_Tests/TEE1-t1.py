@@ -30,7 +30,7 @@ class test_trabalho(unittest.TestCase):
         k = np.array([k1,k1,k1,k2,k2,k2])
         xPn = np.array([1,n])
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
-        print(P)
+    #    print(P)
         '''print(P)
         plt.figure(0)
         plt.plot(P)
@@ -44,7 +44,7 @@ class test_trabalho(unittest.TestCase):
         xPn = np.array([1,n])
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
 
-        print(P)
+    #    print(P)
         '''plt.figure(0)
         plt.plot(P)
         plt.xlabel('x')
@@ -99,4 +99,4 @@ class test_trabalho(unittest.TestCase):
             kx[4*i] = 0;
 
         P = solve_one_phase2D.pressure(nx,ny,P1,Pn,kx,ky)
-        print(P)
+    #    print(P)
