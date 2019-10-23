@@ -69,10 +69,7 @@ class solve_one_phase1D:
 class solve_one_phase2D:
     def conectivity(nx,ny):
         conec = np.zeros((nx*ny,2));conecy = np.zeros((nx*ny,2))
-        i = 0
-        e = 1
-        x = 0;xold = 0
-        v = 1
+        i = 0; e = 1;x = 0; xold = 0; v = 1
         for el in range(0,nx*ny):
             conec[el,0] = e ;conec[el,1] = e+1
             if el == nx*(i+1):

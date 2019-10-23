@@ -57,16 +57,16 @@ class test_trabalho(unittest.TestCase):
         qNewman = 250
         xNewman = nx
         xP = np.array([1])
-        k = k*np.ones(nx); 
+        k = k*np.ones(nx);
         P = solve_one_phase1D.pressure_Newmann(nx,P1,xP,qNewman,xNewman,k,L)
         print('D:',P)
-    '''
+
     def testE(self):
         nx,ny, P1, Pn, k = 4, 4, 300., 50., 100
         k = k*np.ones([nx,ny])
 
         P = solve_one_phase2D.pressure(nx,ny,P1,Pn,k)
-    '''
+
 
     def testeF(self):
         nx,ny,P1,Pn,k1,k2 = 4,4,300.,50.,100,1

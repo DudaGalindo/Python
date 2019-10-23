@@ -189,19 +189,22 @@ class Viga:
                 we[i] = -(N1(xen,xe1,xe2)*u[conec[el,0]-1]+N2(xen,xe1,xe2)*u[conec[el,1]-1]+N3(xen,xe1,xe2)*u[conec[el,2]-1]+N4(xen,xe1,xe2)*u[conec[el,3]-1])
                 thetae[i] = -(d1N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1]+d1N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1]+
                 d1N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1]+d1N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
+
                 Me[i] = -E*I*(d2N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1] +
                 d2N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1] + d2N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1] +
                 d2N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
+
                 Ve[i] = -E*I*(d3N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1] +
                 d3N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1] + d3N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1] +
                 d3N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
+
                 xen = xen + (xe2-xe1)/(n-1)
             end = n*(el+1)
 
         ##Ploting:
         xe = np.linspace(0,L,n*n_el)
 
-        plt.figure(0)
+        '''plt.figure(0)
         plt.plot(xe,we)
         plt.xlabel('x')
         plt.ylabel('w')
@@ -220,14 +223,16 @@ class Viga:
         plt.xlabel('x')
         plt.ylabel('M')
         plt.title('Momento Fletor')
-        plt.show()
+        plt.show()'''
+        print(Me)
 
-        plt.figure(3)
+        '''plt.figure(3)
         plt.plot(xe,Ve)
         plt.xlabel('x')
         plt.ylabel('V')
         plt.title('Esforço Cortante')
-        plt.show()
+        plt.show()'''
+        print(Ve)
 
 class Trelica:
     def conect(n_el,ngl_tot,ngl_el,coord_no,conec_el): ##TENTAR OTIMIZAR
