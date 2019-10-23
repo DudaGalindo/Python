@@ -178,7 +178,7 @@ class Viga:
         #we = np.zeros(10*n_el)
         end = 0
         n = 50
-        we = np.zeros(n*n_el); Me = np.zeros(n*n_el); Ve = np.zeros(n*n_el)
+        we = np.zeros(n*n_el); thetae = np.zeros(n*n_el);Me = np.zeros(n*n_el); Ve = np.zeros(n*n_el)
 
         for el in range(0,n_el):
             xe1 = x[el]
@@ -187,6 +187,8 @@ class Viga:
 
             for i in range(end,n*(el+1)):
                 we[i] = -(N1(xen,xe1,xe2)*u[conec[el,0]-1]+N2(xen,xe1,xe2)*u[conec[el,1]-1]+N3(xen,xe1,xe2)*u[conec[el,2]-1]+N4(xen,xe1,xe2)*u[conec[el,3]-1])
+                thetae[i] = -(d1N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1]+d1N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1]+
+                d1N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1]+d1N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
                 Me[i] = -E*I*(d2N1(xe,xe1,xe2).subs(xe,xen)*u[conec[el,0]-1] +
                 d2N2(xe,xe1,xe2).subs(xe,xen)*u[conec[el,1]-1] + d2N3(xe,xe1,xe2).subs(xe,xen)*u[conec[el,2]-1] +
                 d2N4(xe,xe1,xe2).subs(xe,xen)*u[conec[el,3]-1])
@@ -202,20 +204,29 @@ class Viga:
         plt.figure(0)
         plt.plot(xe,we)
         plt.xlabel('x')
-        plt.ylabel('we')
-        plt.title('deslocamento')
+        plt.ylabel('w')
+        plt.title('Deslocamento')
         plt.show()
 
         plt.figure(1)
-        plt.plot(xe,Me)
+        plt.plot(xe,thetae)
         plt.xlabel('x')
-        plt.ylabel('Momento Fletor')
+        plt.ylabel('theta')
+        plt.title('Rotação')
         plt.show()
 
         plt.figure(2)
+        plt.plot(xe,Me)
+        plt.xlabel('x')
+        plt.ylabel('M')
+        plt.title('Momento Fletor')
+        plt.show()
+
+        plt.figure(3)
         plt.plot(xe,Ve)
         plt.xlabel('x')
-        plt.ylabel('Esforço Cortante')
+        plt.ylabel('V')
+        plt.title('Esforço Cortante')
         plt.show()
 
 class Trelica:

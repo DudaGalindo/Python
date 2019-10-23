@@ -19,6 +19,7 @@ class test_trabalho(unittest.TestCase):
         def P_ans(x): return 300-250/5*x
         for x in range(n-1):
             self.assertEqual(np.round(P[x],2),P_ans(x),'ValueError')
+        print('A:',P)
         #plt.figure(0)
         #plt.plot(P)
         #plt.xlabel('x')
@@ -30,7 +31,7 @@ class test_trabalho(unittest.TestCase):
         k = np.array([k1,k1,k1,k2,k2,k2])
         xPn = np.array([1,n])
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
-    #    print(P)
+        print('B:',P)
         '''print(P)
         plt.figure(0)
         plt.plot(P)
@@ -43,8 +44,8 @@ class test_trabalho(unittest.TestCase):
         k = np.array([k1,k1,k2,k2,k3,k3])
         xPn = np.array([1,n])
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
+        print('C:',P)
 
-    #    print(P)
         '''plt.figure(0)
         plt.plot(P)
         plt.xlabel('x')
@@ -56,47 +57,21 @@ class test_trabalho(unittest.TestCase):
         qNewman = 250
         xNewman = nx
         xP = np.array([1])
-        k = k*np.ones(nx); k[nx-1] = 0
+        k = k*np.ones(nx); 
         P = solve_one_phase1D.pressure_Newmann(nx,P1,xP,qNewman,xNewman,k,L)
-        print(P)
-
+        print('D:',P)
+    '''
     def testE(self):
         nx,ny, P1, Pn, k = 4, 4, 300., 50., 100
-        kx = k*np.ones(nx*nx+1)
-        ky = k*np.ones((ny+1)*ny)
+        k = k*np.ones([nx,ny])
 
-        for i in range(ny):
-            ky[i] = 0;
-            ky[4*ny+i] = 0;
-
-        for i in range(nx+1):
-            kx[4*i] = 0;
-        P = solve_one_phase2D.pressure(nx,ny,P1,Pn,kx,ky)
-        #print(P)
-
-        '''plt.figure(0)
-        plt.plot(P)
-        plt.xlabel('x')
-        plt.ylabel('Pressure')
-        plt.show()'''
+        P = solve_one_phase2D.pressure(nx,ny,P1,Pn,k)
+    '''
 
     def testeF(self):
         nx,ny,P1,Pn,k1,k2 = 4,4,300.,50.,100,1
+        k = k1*np.ones([nx,ny])
+        k[1,1] = k2; k[2,2] = k2; k[1,2] = k2; k[2,1] = k2;
+        print(k)
 
-        ky = k1*np.ones((ny+1)*ny)
-        ky[9] = k2; ky[10] = k2; ky[13] = k2; ky[14] = k2;
-        ky = solve_one_phase2D.permeability(ky)
-
-        for i in range(ny):
-            ky[i] = 0;
-            ky[4*ny+i] = 0;
-
-        kx = k1*np.ones(nx*nx+1)
-        kx[6] = k2; kx[7] = k2; kx[10] = k2; kx[11] = k2
-        kx = solve_one_phase1D.permeability(kx)
-
-        for i in range(0,nx+1):
-            kx[4*i] = 0;
-
-        P = solve_one_phase2D.pressure(nx,ny,P1,Pn,kx,ky)
-    #    print(P)
+        P = solve_one_phase2D.pressure(nx,ny,P1,Pn,k)

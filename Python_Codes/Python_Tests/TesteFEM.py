@@ -64,7 +64,7 @@ class Test_FEM(unittest.TestCase):
         for i in range(len(u)):
             self.assertAlmostEqual(u[i],u_ans[i],3,'ValueError: Failed')
         ##Plotagens:
-        #Viga.Plots(x,u,L,n_el,E,I)
+        Viga.Plots(x,u,L,n_el,E,I)
 
     def test_trelica7_4_1(self):
         n_el = 2;
@@ -123,4 +123,3 @@ class Test_FEM(unittest.TestCase):
         n_el = 3
         n_no_el = 2*np.array(n_el)
         coord_no = np.array([[0,3],[3,3],[6,0],[9,0]])
-        
