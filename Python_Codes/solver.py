@@ -4,30 +4,22 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+# Valido apenas para malhas uniformes
 class solve_one_phase1D:
     def conectivity(n):
-        conec = np.zeros((n,2));conecy = np.zeros((n,2))
-        i = 0
-        e = 1
+        conec = np.zeros((n,2));
         for el in range(0,n):
-            conec[el,0] = e ;conec[el,1] = e+1
-            if el == n*(i+1):
-                e = e+1
-                conec[el,0] = e; conec[el,1] = e+1
-                i = i+1
-            e = e+1
+            conec[el,0] = el+1 ;conec[el,1] = el+2
         conec = conec.astype(int)
         return conec
 
     def permeability(k,n):
-        e = 1
-        k_face = np.zeros(len(k)+1)
-        for i in range(1,len(k)):
-            k_face[e] = k[i]
+        k_face = np.zeros(n+1);
+
+        for i in range(1,n):
             if k[i] != k[i-1]:
-                k_face[e] = 2*k[i]*k[i-1]/(k[i]+k[i-1])
-            e=e+1
-            if e==n*(i+1)+i: e=e+2 #ATENÇÃO - CONSIDERANDO QUE A MALHA É UNIFORME
+                k_face[i] = 2*k[i]*k[i-1]/(k[i]+k[i-1])
+            else: k_face[i] = k[i]
         return k_face
 
     def transmissibility(n,k,xP): #tentar otimizar usando a matriz esparsa do scipy
@@ -67,67 +59,43 @@ class solve_one_phase1D:
         return P
 
 class solve_one_phase2D:
-    def conectivity(nx,ny):
-        conec = np.zeros((nx*ny,2));conecy = np.zeros((nx*ny,2))
-        i = 0; e = 1;x = 0; xold = 0; v = 1
-        for el in range(0,nx*ny):
-            conec[el,0] = e ;conec[el,1] = e+1
-            if el == nx*(i+1):
-                e = e+1
-                conec[el,0] = e; conec[el,1] = e+1
-                i = i+1
-            e = e+1
-
-            conecy[el,0] = v ;conecy[el,1] = v+1
-            if el == nx*(x):
-                x = x+1
-                conecy[el,0] = x; conecy[el,1] = x+1
-
-            if x != xold: v = x
-            v = nx + v+1
-            xold = x
-
-        conec = conec.astype(int)
-        conecy = conecy.astype(int)
-        return conec,conecy
 
     def permeability(k,nx,ny):
-        k_facex = np.zeros(nx*(nx+1));k_facey = np.zeros(ny*(ny+1))
-        e = 1
+        k_facex = np.zeros((nx,nx+1));k_facey = np.zeros((ny+1,ny))
+
         for i in range(0,ny):
             for j in range(1,nx):
-                k_facex[e] = k[i,j]
                 if k[i,j] != k[i,j-1]:
-                    k_facex[e] = 2*k[i,j]*k[i,j-1]/(k[i,j]+k[i,j-1])
-                e=e+1
-                if e==nx*(i+1)+i: e=e+2
-
-        e = 1
-        for j in range(0,ny):
-            for i in range(1,nx):
-                k_facey[e] = k[i,j]
-                if k[i,j] != k[i-1,j]:
-                    k_facey[e] = 2*k[i,j]*k[i-1,j]/(k[i,j]+k[i-1,j])
-                e=e+1
-                if e==ny*(j+1)+j: e=e+2
-
+                    k_facex[i,j] = 2*k[i,j]*k[i,j-1]/(k[i,j]+k[i,j-1])
+                else: k_facex[i,j] = k[i,j]
+                if k[j,i] != k[j-1,i]:
+                    k_facey[j,i] = 2*k[j,i]*k[j-1,i]/(k[j,i]+k[j-1,i])
+                else: k_facey[j,i] = k[j,i]
         return k_facex,k_facey
 
     def transmissibility(nx,ny,kfx,kfy):
-        conec,conecy = solve_one_phase2D.conectivity(nx,ny)
+        conec = solve_one_phase1D.conectivity(nx)
+        print(conec)
         T = np.zeros((nx*ny,nx*ny))
         T[0,0] = 1
         T[nx*ny-1,nx*ny-1] = 1
+        i=0
         # Matriz de transmissibilidade --normalizada
         for el in range(1,nx*ny-1):
-            Face2x = conec[el,1]-1; Face1x = conec[el,0]-1
-            Face2y = conecy[el,1]-1; Face1y = conecy[el,0]-1
-            #Face2y = conec[el]
-            T[el,el] = -1*(kfx[Face2x]+kfx[Face1x]) -1*(kfy[Face2y]+kfy[Face1y])
-            T[el,el+1] = 1*kfx[Face2x]
-            T[el,el-1] = 1*kfx[Face1x]
-            if el<nx*ny-nx:T[el,el+4] = 1*kfy[Face2y]
-            if el>nx-1:T[el,el-4] = 1*kfy[Face1y]
+            linha = int(el/4)
+            el_linha = el*(np.sign(4-i))**2 - 4*int(el/4)
+            Face2x = conec[el_linha,1]-1; Face1x = conec[el_linha,0]-1
+            Face2y = conec[linha,1]-1; Face1y = conec[linha,0]-1;
+            '''Como el_linha+1 e el_linha coincide com Face2x e Face1x E linha
+            coincide com Face2y e Face1y, não precisaria de conec'''
+            T[el,el] = -1*(kfx[linha,Face2x]+kfx[linha,Face1x]) -\
+                        1*(kfy[Face2y,el_linha]+kfy[Face1y,el_linha])
+            T[el,el+1] = 1*kfx[linha,Face2x]
+            T[el,el-1] = 1*kfx[linha,Face1x]
+            if el<nx*ny-nx:T[el,el+4] = kfy[Face2y,el_linha]
+            if el>nx-1:T[el,el-4] = kfy[Face1y,el_linha]
+
+
         return T
 
 
