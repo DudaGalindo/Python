@@ -32,12 +32,12 @@ class test_trabalho(unittest.TestCase):
         xPn = np.array([1,n])
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
         print('B:',P)
-        '''print(P)
+
         plt.figure(0)
         plt.plot(P)
         plt.xlabel('x')
         plt.ylabel('Pressure')
-        plt.show()'''
+        plt.show()
 
     def testC(self):
         n, P1, Pn, k1, k2, k3 = 6,300,50,100,50,10
@@ -46,11 +46,11 @@ class test_trabalho(unittest.TestCase):
         P = solve_one_phase1D.pressure(n,P1,Pn,xPn,k)
         print('C:',P)
 
-        '''plt.figure(0)
+        plt.figure(0)
         plt.plot(P)
         plt.xlabel('x')
         plt.ylabel('Pressure')
-        plt.show()'''
+        plt.show()
 
     def testD(self):
         nx,P1,qn,k,L = 6, 300.,250.,100,100
@@ -66,12 +66,12 @@ class test_trabalho(unittest.TestCase):
         k = k*np.ones([nx,ny])
 
         P = solve_one_phase2D.pressure(nx,ny,P1,Pn,k)
-
+        print('E:',P)
 
     def testeF(self):
         nx,ny,P1,Pn,k1,k2 = 4,4,300.,50.,100,1
         k = k1*np.ones([nx,ny])
         k[1,1] = k2; k[2,2] = k2; k[1,2] = k2; k[2,1] = k2;
-        print(k)
 
         P = solve_one_phase2D.pressure(nx,ny,P1,Pn,k)
+        print('F:',P)
