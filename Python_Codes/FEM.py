@@ -224,7 +224,7 @@ class Viga:
         plt.ylabel('M')
         plt.title('Momento Fletor')
         plt.show()'''
-        print(Me)
+        #print(Me)
 
         '''plt.figure(3)
         plt.plot(xe,Ve)
@@ -232,7 +232,7 @@ class Viga:
         plt.ylabel('V')
         plt.title('Esforço Cortante')
         plt.show()'''
-        print(Ve)
+        #print(Ve)
 
 class Trelica:
     def conect(n_el,ngl_tot,ngl_el,coord_no,conec_el): ##TENTAR OTIMIZAR
@@ -295,17 +295,21 @@ class Trelica:
         return u
 
 class Frame:
-    def Elem(A,E,beta,he):
-        #definir os "an"
-        kel = np.array([[a3,a4,a5,-a3,-a4,a5],[a4,a6,a7,-a4,-a6,a7],[a5,a7,a1,-a5,-a7,a2],[-a3,-a4,-a5,a3,a4,-a5],
-        [-a4,-a6,-a7,a4,a6,-a7],[a5,a7,a2,-a5,-a7,a1]])
+    def Elem(A,E,beta,he,I):
+        c = math.cos(beta); s = math.sin(beta)
+        a1 = 4*E*I/he; a2 = 2*E*I/he; a3 = A*E*c**2/he + 12*E*I*s**2/he**3;
+        a4 = A*E*c*s/he - 12*E*I*c*s/he**3; a5 = -6*E*I*s/he**2;
+        a6 = A*E*s**2/he + 12*E*I*c**2/he**3; a7 = 6*E*I*c/he**2
+        Kel = np.array([[a3,a4,a5,-a3,-a4,a5],[a4,a6,a7,-a4,-a6,a7],\
+                        [a5,a7,a1,-a5,-a7,a2],[-a3,-a4,-a5,a3,a4,-a5],\
+                        [-a4,-a6,-a7,a4,a6,-a7],[a5,a7,a2,-a5,-a7,a1]])
 
         return Kel
     def Melem(rho,A,L,beta):
         #matriz de massa consistente:
         return Mel
 
-    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,Kg):
+    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg):
         for el in range(0,n_el):
             No1 = int(conec_el[el,0])
             No2 = int(conec_el[el,1])
@@ -314,11 +318,32 @@ class Frame:
             if (coord_no[No2-1,0] - coord_no[No1-1,0])==0:
                 beta = 2*math.atan(1)
             else: beta = math.atan((coord_no[No2-1,1] - coord_no[No1-1,1])/(coord_no[No2-1,0] - coord_no[No1-1,0]))
-            Kel = Frame.Elem(A[el],E[el],beta,he)
+            Kel = Frame.Elem(A,E,beta,he,I)
             for i in range(0,ngl_el):
                 ig = int(conec[el,i] - 1)
                 for j in range(0,ngl_el):
                     jg = int(conec[el,j] - 1)
                     Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
-
         return Kg
+
+    def deslocamento(coord_no,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E,I):
+        n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
+        ngl_no = 3*np.ones(n_nos_tot)
+        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
+        #print(ngl_tot)
+        conec = general.conect(ngl_tot,n_el,ngl_el)
+        print(conec)
+        #conec_el = np.array([[1,2],[2,3],[3,4]])
+        conec_el = general.conect(1*n_nos_tot,n_el,n_nos_el[0])
+
+        #print(conec)
+        Kg,Fg = general.initialize(ngl_tot)
+
+        for i in range(len(xF)):
+            Fg[xF[i]] = F[i]
+
+        Kg = Frame.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg)
+        Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
+        Kg = np.linalg.inv(Kg)
+        u = np.matmul(Kg,Fg.T)
+        return u

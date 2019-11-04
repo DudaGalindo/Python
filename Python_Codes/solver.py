@@ -54,6 +54,7 @@ class solve_one_phase1D:
         q[0] = P1; q[n-1] = Pn  # conhecidos - primeira e quinta linha de [T] determinadas
         k = solve_one_phase1D.permeability(k,n)
         T = solve_one_phase1D.transmissibility(n,k,xPn)
+        print(T)
         P = np.matmul(np.linalg.inv(T),q)
         return P
 
@@ -63,6 +64,7 @@ class solve_one_phase1D:
         q[xPn-1] = Pn; q[xqn-1] = qn*h
         k = solve_one_phase1D.permeability(k,n)
         T = solve_one_phase1D.transmissibility(n,k,xPn)
+        print('D:',T)
         P = np.matmul(np.linalg.inv(T),q)
         return P
 

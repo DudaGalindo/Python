@@ -1,12 +1,12 @@
 import numpy as np
 import math
-from ..FEM import Viga, Barra, general, Trelica
+from ..FEM import Viga, Barra, general, Trelica, Frame
 import matplotlib.pyplot as plt
 import unittest
 
 class Test_FEM(unittest.TestCase):
 
-    def testFEM_Barra_prob5_4(self): # 1grau de liberdade por nó - cálculo do deslocamento apenas
+    '''def testFEM_Barra_prob5_4(self): # 1grau de liberdade por nó - cálculo do deslocamento apenas
     # ENTRADA DE DADOS
         n_el = 2 #numero de elementos da estrutura (AB e BC)
         n_nos_el = np.array([3,2]) #número de nós por elemento
@@ -115,11 +115,23 @@ class Test_FEM(unittest.TestCase):
         u_ans = np.array([0.0000,0.0000E-5,0.3200E-5,-1.57E-5,0.8650E-5,-1.5700E-5,0.6400E-5,-2.2867E-5,0.5450E-5,-2.0167E-5,1.12000E-5,0.0000])
 
         for i in range(len(u)-1):
-            self.assertAlmostEqual(u[i],u_ans[i],9,'ValueError: Failed')
+            self.assertAlmostEqual(u[i],u_ans[i],9,'ValueError: Failed')'''
 
     def testeFRAME(self):
         E = 210000
-        A = 100
+        A = 0.01
+        I = 2E8
         n_el = 3
-        n_no_el = 2*np.array(n_el)
+        n_nos_el = 2*np.ones(n_el)
+        n_nos_el = n_nos_el.astype(int)
         coord_no = np.array([[0,3],[3,3],[6,0],[9,0]])
+
+        # Esforços concentrados/prescritos:
+        Fc = np.array([-10E3,-5E3,-10E3,5E6])
+        xFc = np.array([4,5,7,8])
+
+        # Condições de Contorno:
+        xCC = np.array([0,1,2,9,10,11])
+        valor_CC = np.array([0,0,0,0,0,0])
+        u = Frame.deslocamento(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I)
+        print(u)
