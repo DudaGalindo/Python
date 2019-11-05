@@ -1,12 +1,16 @@
 import numpy as np
 import math
-from ..FEM import Viga, Barra, general, Trelica, Frame
+from ..FEM_barra import Barra
+from ..FEM_viga import Viga
+from ..FEM_trelica import Trelica
+from ..FEM_frame import Frame
+from ..FEM import general
 import matplotlib.pyplot as plt
 import unittest
 
 class Test_FEM(unittest.TestCase):
 
-    '''def testFEM_Barra_prob5_4(self): # 1grau de liberdade por nó - cálculo do deslocamento apenas
+    def testFEM_Barra_prob5_4(self): # 1grau de liberdade por nó - cálculo do deslocamento apenas
     # ENTRADA DE DADOS
         n_el = 2 #numero de elementos da estrutura (AB e BC)
         n_nos_el = np.array([3,2]) #número de nós por elemento
@@ -84,12 +88,14 @@ class Test_FEM(unittest.TestCase):
 
         coord_no  = np.array([[0.,0.],[10.,0.],[0.,10.]]) #[x,y]
         conec_el = np.array([[1,2],[2,3]])
-        u = Trelica.deslocamento(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
-
+        u,T = Trelica.deslocamento_tensao(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
+        T_ans = np.array([-2500,2828])
         u_ans = np.array([0.0000,0.0000,-0.0008,-0.0027,0.0000,0.0000])
 
         for i in range(len(u)):
             self.assertAlmostEqual(u[i],u_ans[i],4,'ValueError: Failed')
+        for i in range(0,len(T)):
+            self.assertAlmostEqual(T[i],T_ans[i],0,'ValueError:Failed')
 
     def test_trelica7_4_2(self): ##rever
         n_el = 9
@@ -110,24 +116,25 @@ class Test_FEM(unittest.TestCase):
         coord_no = np.array([[0,0],[4,0],[4,3],[8,0],[8,3],[12,0]])
         conec_el = np.array([[1,2],[1,3],[2,3],[2,4],[3,4],[3,5],[4,5],[4,6],[5,6]])
 
-        u = Trelica.deslocamento(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
-
+        u,T = Trelica.deslocamento_tensao(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
+        T_ans = np.array([1.6E5,-1E5,0,1.6E5,1E5,-1.6E5,1.8E5,2.4E5,-3E5])
         u_ans = np.array([0.0000,0.0000E-5,0.3200E-5,-1.57E-5,0.8650E-5,-1.5700E-5,0.6400E-5,-2.2867E-5,0.5450E-5,-2.0167E-5,1.12000E-5,0.0000])
 
         for i in range(len(u)-1):
-            self.assertAlmostEqual(u[i],u_ans[i],9,'ValueError: Failed')'''
-
+            self.assertAlmostEqual(u[i],u_ans[i],9,'ValueError: Failed')
+        for i in range(0,len(T)):
+            self.assertAlmostEqual(T[i],T[i],5,'ValueError: Failed')
     def testeFRAME(self):
         E = 210000
-        A = 0.01
+        A = 100
         I = 2E8
         n_el = 3
         n_nos_el = 2*np.ones(n_el)
         n_nos_el = n_nos_el.astype(int)
-        coord_no = np.array([[0,3],[3,3],[6,0],[9,0]])
+        coord_no = np.array([[0,3000],[3000,3000],[6000,0],[9000,0]])
 
         # Esforços concentrados/prescritos:
-        Fc = np.array([-10E3,-5E3,-10E3,5E6])
+        Fc = np.array([-10E3,-5E6,-10E3,5E6])
         xFc = np.array([4,5,7,8])
 
         # Condições de Contorno:
