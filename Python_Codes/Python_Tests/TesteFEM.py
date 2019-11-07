@@ -76,7 +76,7 @@ class Test_FEM(unittest.TestCase):
         A = np.array([0.4,0.5])
 
         n_nos_el = 2*np.ones(n_el)
-        n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
+        n_nos_tot = 3
 
         # Condições de Contorno:
         xCC = np.array([0,1,4,5]) #dos nós
@@ -104,7 +104,6 @@ class Test_FEM(unittest.TestCase):
 
         n_nos_el = 2*np.ones(n_el)
         n_nos_tot = 6
-
         # Forças concentradas:
         Fc = np.array([-600,200])
         xFc = np.array([7,8])
@@ -124,6 +123,7 @@ class Test_FEM(unittest.TestCase):
             self.assertAlmostEqual(u[i],u_ans[i],9,'ValueError: Failed')
         for i in range(0,len(T)):
             self.assertAlmostEqual(T[i],T[i],5,'ValueError: Failed')
+
     def testeFRAME(self):
         E = 210000
         A = 100
@@ -141,4 +141,3 @@ class Test_FEM(unittest.TestCase):
         xCC = np.array([0,1,2,9,10,11])
         valor_CC = np.array([0,0,0,0,0,0])
         u = Frame.deslocamento(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I)
-        print(u)

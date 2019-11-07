@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import sympy as sp
+import matplotlib.pyplot as plt
 from .FEM import general
 
 
@@ -113,7 +114,7 @@ class Viga:
         ##Ploting:
         xe = np.linspace(0,L,n*n_el)
 
-        '''plt.figure(0)
+        plt.figure(0)
         plt.plot(xe,we)
         plt.xlabel('x')
         plt.ylabel('w')
@@ -132,13 +133,13 @@ class Viga:
         plt.xlabel('x')
         plt.ylabel('M')
         plt.title('Momento Fletor')
-        plt.show()'''
+        plt.show()
         #print(Me)
 
-        '''plt.figure(3)
+        plt.figure(3)
         plt.plot(xe,Ve)
         plt.xlabel('x')
         plt.ylabel('V')
         plt.title('Esforço Cortante')
-        plt.show()'''
+        plt.show()
         #print(Ve)
