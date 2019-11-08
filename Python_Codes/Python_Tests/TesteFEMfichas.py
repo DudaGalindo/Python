@@ -66,15 +66,15 @@ class TestTrelicas(unittest.TestCase):
             else: return q0+q1*(x-8*0.305)/(5*0.305)
 
         # Forças Concentradas
+        xFc = np.array([8,10])*0.305
         Fc = np.array([-3000,15000])*4.448
-        #coordFc = np.array([8.,10.])
-        xFc = np.array([32,40])
 
         cf = 0;
 
         # Condições de Contorno:
-        xCC_dir = np.array([52,51]) #posição
+        xCC_dir = np.array([13,13])*0.305 #posição
         valor_CCdir = np.array([0, 0])
+
         x = np.linspace(0,L,n_el+1);
 
         u = Viga.deslocamento(n_el,x,I,E,Fc,xFc,q,xCC_dir,valor_CCdir,cf) #1GL
