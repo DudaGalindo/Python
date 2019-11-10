@@ -64,15 +64,17 @@ class TestTrelicas(unittest.TestCase):
             if x<8*0.305:
                 return q0*x/(8*0.305)
             else: return q0+q1*(x-8*0.305)/(5*0.305)
+        n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
+        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
 
         # Forças Concentradas
-        xFc = np.array([8,10])*0.305
+        xFc = np.array([64,ngl_tot-2])
         Fc = np.array([-3000,15000])*4.448
 
         cf = 0;
 
         # Condições de Contorno:
-        xCC_dir = np.array([13,13])*0.305 #posição
+        xCC_dir = np.array([ngl_tot-2,ngl_tot-1]) #posição
         valor_CCdir = np.array([0, 0])
 
         x = np.linspace(0,L,n_el+1);

@@ -79,7 +79,7 @@ class Test_FEM(unittest.TestCase):
         n_nos_tot = 3
 
         # Condições de Contorno:
-        xCC = np.array([0,1,4,5]) #dos nós
+        xCC = np.array([0,1,4,5]) # dos nós
         valor_CC = np.array([0.,0.,0.,0.])
 
         # Forças Concentradas:

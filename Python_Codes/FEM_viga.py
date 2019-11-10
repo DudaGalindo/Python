@@ -50,26 +50,12 @@ class Viga:
         ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
         conec = general.conect(ngl_tot,n_el,ngl_el,ngl_no[0])
 
-        gl_F = (np.zeros(len(xF))).astype(int)
-        glCC = (np.zeros(len(xCC))).astype(int)
-        a = 0;b = 0
-        for i in range(1,len(x)):
-            if x[i] == xF[0]:
-                gl_F[a] = conec[i-1,0]; a = a+1
-            if x[i]==xF[1]:
-                gl_F[a] = conec[i-1,0]; a = a+1
-            if x[i] == xCC[0]:
-                glCC[b] = conec[i-1,0];b = b+1
-            if x[i] == xCC[1]:
-                glCC[b] = conec[i-1,0];b = b+1
-        print(glCC)
         Fc = np.zeros(ngl_tot)
-        for i in range(len(xF)):
-            Fc[gl_F[i]] = F[i]
+        Fc[xF[:]] = F[:]
 
         Kg,Fg = general.initialize(ngl_tot)
         Kg,Fg = Viga.Global(E,I,cf,Fc,x,Kg,Fg,n_el,ngl_el,conec,q)
-        Kg,Fg = general.Kg_Fg(ngl_tot,glCC,valor_CC,Kg,Fg)
+        Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
         Kg = np.linalg.inv(Kg)
         u = np.matmul(Kg,Fg.T)
         return u
