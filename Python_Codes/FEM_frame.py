@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 from .FEM import general
 
 class Frame:
@@ -31,22 +32,33 @@ class Frame:
                     Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
         return Kg
 
-    def deslocamento(coord_no,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E,I):
+    def deslocamento_reacao(coord_no,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E,I):
         n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
-        ngl_no = 3*np.ones(n_nos_tot)
-        ngl_no = ngl_no.astype(int)
-        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
+        ngl_no = 3
+        ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el[0],n_nos_tot)
 
-        conec = general.conect(ngl_tot,n_el,ngl_el,ngl_no[0])
+        conec = general.conect(ngl_tot,n_el,ngl_el,ngl_no)
         conec_el = general.conect(1*n_nos_tot,n_el,2,1)
 
         Kg,Fg = general.initialize(ngl_tot)
 
-        for i in range(len(xF)):
-            Fg[xF[i]] = F[i]
+        Fg[xF[:]] = F[:]
 
         Kg = Frame.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg)
-        Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
-        Kg = np.linalg.inv(Kg)
+        Kg_singular,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
+        Kg = np.linalg.inv(Kg_singular)
         u = np.matmul(Kg,Fg.T)
-        return u
+        reacao = np.matmul(Kg_singular,u.T)
+        ##plots:
+        i = (np.linspace(0,n_nos_tot-1,n_nos_tot)).astype(int)
+        x = coord_no[:,0] + u[ngl_no*i[:]]*100 #100 é um fator para visualizar a deformação
+        y = coord_no[:,1] + u[ngl_no*i[:]+1]*100
+
+        plt.figure(1)
+        plt.plot(x,y)
+        plt.plot(coord_no[:,0],coord_no[:,1])
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Deformada')
+        plt.show()
+        return u,reacao

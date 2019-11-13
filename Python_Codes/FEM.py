@@ -13,7 +13,6 @@ class general:
         ngl_el = ngl_no*n_nos_el
         ngl_el = ngl_el.astype(int)
         ngl_tot = ngl_no*n_nos_tot #número de GL da estrutura
-        ngl_tot = ngl_tot.astype(int)
         return ngl_el,ngl_tot
 
     def initialize(ngl_tot):

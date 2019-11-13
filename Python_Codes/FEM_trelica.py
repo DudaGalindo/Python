@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 from .FEM import general
 
 
@@ -47,17 +48,14 @@ class Trelica:
         return Kg
 
     def deslocamento_tensao(coord_no,conec_el,n_nos_tot,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E):
-        ngl_no = 2*np.ones(n_nos_tot)
-        ngl_no = ngl_no.astype(int)
-        ngl_el, ngl_tot = general.ngl(ngl_no[0],n_nos_el[0],n_nos_tot)
+        ngl_no = 2
+        ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el[0],n_nos_tot)
 
         conec = Trelica.conect(n_el,ngl_tot,ngl_el,coord_no,conec_el)
 
-        # Deslocamento:
         Kg,Fg = general.initialize(ngl_tot)
 
-        for i in range(len(xF)):
-            Fg[xF[i]] = F[i]
+        Fg[xF[:]] = F[:]
 
         Kg = Trelica.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,Kg)
         Kg,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
@@ -68,6 +66,7 @@ class Trelica:
         u_el = np.zeros((ngl_el,1))
         Fel = np.zeros(ngl_el)
         Stress = np.zeros(n_el)
+
         for el in range(0,n_el):
             No1 = int(conec_el[el,0])
             No2 = int(conec_el[el,1])
@@ -77,16 +76,39 @@ class Trelica:
                 beta = 2*math.atan(1)
             else: beta = math.atan((coord_no[No2-1,1] - coord_no[No1-1,1])/(coord_no[No2-1,0] - coord_no[No1-1,0]))
 
-            for i in range(0,ngl_el):
-                u_el[i,0] = u[conec[el,i]-1]
+            u_el[:,0] = u[conec[el,:]-1]
             Kel = Trelica.Elem(A[el],E[el],beta,he)
 
             Fel[:] = np.matmul(Kel,u_el).T
-            for i in range(0,2):
+            for i in range(0,ngl_no):
                 Feq = math.sqrt(Fel[i]**2+Fel[i+1]**2)
 
             Stress[el] = Feq/A[el]
 
             if Fel[2]*(coord_no[No2-1,0] - coord_no[No1-1,0])<0: #F[3] corresponde a força em x no segundo nó.
                 Stress[el] = -Stress[el]
-        return u, Stress
+
+        ##plots:
+        i = (np.linspace(0,n_nos_tot-1,n_nos_tot)).astype(int)
+        coord_no_deformados = np.zeros(coord_no.shape)
+        coord_no_deformados[:,0] = coord_no[:,0] + u[ngl_no*i[:]]*100 #100 é um fator para visualizar a deformação
+        coord_no_deformados[:,1] = coord_no[:,1] + u[ngl_no*i[:]+1]*100
+
+        x = np.zeros(2*n_el);y = np.zeros(2*n_el);xold = np.zeros(2*n_el);yold = np.zeros(2*n_el)
+        e = 0
+        for el in range(0,n_el):
+            xold[e] = coord_no[conec_el[el,0]-1,0]; xold[e+1] = coord_no[conec_el[el,1]-1,0]
+            yold[e] = coord_no[conec_el[el,0]-1,1]; yold[e+1] = coord_no[conec_el[el,1]-1,1]
+            x[e] = coord_no_deformados[conec_el[el,0]-1,0]; x[e+1] = coord_no_deformados[conec_el[el,1]-1,0]
+            y[e] = coord_no_deformados[conec_el[el,0]-1,1]; y[e+1] = coord_no_deformados[conec_el[el,1]-1,1]
+            e = e+2
+
+        print(xold,yold)
+        plt.figure(1)
+        plt.plot(x,y)
+        plt.plot(xold,yold)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title('Deformada')
+        plt.show()
+        return u,Stress

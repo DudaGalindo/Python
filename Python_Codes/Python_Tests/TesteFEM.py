@@ -68,7 +68,7 @@ class Test_FEM(unittest.TestCase):
         for i in range(len(u)):
             self.assertAlmostEqual(u[i],u_ans[i],3,'ValueError: Failed')
         ##Plotagens:
-        Viga.Plots(x,u,L,n_el,E,I)
+        #Viga.Plots(x,u,L,n_el,E,I)
 
     def test_trelica7_4_1(self):
         n_el = 2;
@@ -88,7 +88,7 @@ class Test_FEM(unittest.TestCase):
 
         coord_no  = np.array([[0.,0.],[10.,0.],[0.,10.]]) #[x,y]
         conec_el = np.array([[1,2],[2,3]])
-        u,T = Trelica.deslocamento_tensao(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
+        u = Trelica.deslocamento_tensao(coord_no,conec_el,n_nos_tot,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E)
         T_ans = np.array([-2500,2828])
         u_ans = np.array([0.0000,0.0000,-0.0008,-0.0027,0.0000,0.0000])
 
@@ -129,8 +129,7 @@ class Test_FEM(unittest.TestCase):
         A = 100
         I = 2E8
         n_el = 3
-        n_nos_el = 2*np.ones(n_el)
-        n_nos_el = n_nos_el.astype(int)
+        n_nos_el = (2*np.ones(n_el)).astype(int)
         coord_no = np.array([[0,3000],[3000,3000],[6000,0],[9000,0]])
 
         # Esforços concentrados/prescritos:
@@ -140,4 +139,6 @@ class Test_FEM(unittest.TestCase):
         # Condições de Contorno:
         xCC = np.array([0,1,2,9,10,11])
         valor_CC = np.array([0,0,0,0,0,0])
-        u = Frame.deslocamento(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I)
+        u,reacoes = Frame.deslocamento_reacao(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I)
+
+        ##ORGANIZAR ESSE CÓDIGO
