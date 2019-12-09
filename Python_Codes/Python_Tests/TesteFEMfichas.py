@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from ..FEM import general
+from ..FEM_frame import Frame
 from ..FEM_viga import Viga
 from ..FEM_trelica import Trelica
 import unittest
@@ -69,7 +70,7 @@ class TestVigas(unittest.TestCase):
             else: return q0+q1*(x-8*0.305)/(5*0.305)
 
         # Forças Concentradas:
-        n_el_trechos = np.array([round(8/13*n_el),round(2/13*n_el),round(3/13*n_el)])
+        n_el_trechos = (np.array([8/13,2/13,3/13])*n_el).round().astype(int)
         xFc = np.array([2*n_el_trechos[0],2*(n_el_trechos[0]+n_el_trechos[1])])
         Fc = np.array([3000,-15000])*4.448
 
@@ -78,18 +79,97 @@ class TestVigas(unittest.TestCase):
         # Condições de Contorno:
         n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
         ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el[0],n_nos_tot)
-
         xCC_dir = np.array([ngl_tot-2,ngl_tot-1]) #posição
         valor_CCdir = np.array([0, 0])
 
         # Vetor x:
         x1 = np.linspace(0,8*0.305,n_el_trechos[0]+1)
-        x2 = np.linspace(8.2*0.305,10*0.305,n_el_trechos[1])
-        x3 = np.linspace((10.2)*0.305,L,n_el_trechos[2])
+        x2 = np.linspace((8+2/n_el_trechos[1])*0.305,10*0.305,n_el_trechos[1])
+        x3 = np.linspace((10+3/n_el_trechos[2])*0.305,L,n_el_trechos[2])
         x = np.append(x1,x2); x = np.append(x,x3)
 
         u = Viga.deslocamento(n_el,x,I,E,Fc,xFc,q,xCC_dir,valor_CCdir,cf) #1GL
         Viga.Plots(x,u,L,n_el,E,I)
 
 class testeFRAME(unittest.TestCase):
-    def test
+    def test6(self):
+        E = 30E6 #lb/in²
+        n_el = 104
+        A = 100*np.ones(n_el) #in²
+        I = 200*np.ones(n_el) #in⁴
+
+        n_nos_el = 2*np.ones(n_el)
+        coord_no = np.array([[0,0],[0,16],[8,16],[20,16],[20,0]])*12
+
+        def q(x):
+            if x<16*12:return -500
+            else: return 0
+
+        n_el_trechos = (np.array([16/52,8/52,12/52,16/52])*n_el).round().astype(int)
+
+        coord_no_trecho1 = np.linspace(coord_no[0,:],coord_no[1,:],n_el_trechos[0]+1)
+        coord_no_trecho2 = np.linspace(coord_no[1,:]+np.array([8*12/n_el_trechos[1],0]),coord_no[2,:],n_el_trechos[1])
+        coord_no_trecho3 = np.linspace(coord_no[2,:]+np.array([12*12/n_el_trechos[2],0]),coord_no[3,:],n_el_trechos[2])
+        coord_no_trecho4 = np.linspace(coord_no[3,:]-np.array([0,16*12/n_el_trechos[3]]),coord_no[4,:],n_el_trechos[3])
+        coord_nox = np.append(coord_no_trecho1[:,0],coord_no_trecho2[:,0])
+        coord_nox = np.append(coord_nox[:],coord_no_trecho3[:,0])
+        coord_nox = np.append(coord_nox[:],coord_no_trecho4[:,0])
+        coord_noy = np.append(coord_no_trecho1[:,1],coord_no_trecho2[:,1])
+        coord_noy = np.append(coord_noy[:],coord_no_trecho3[:,1])
+        coord_noy = np.append(coord_noy[:],coord_no_trecho4[:,1])
+        coord_no = np.array([coord_nox,coord_noy]).T
+
+        # Esforços concentrados/prescritos:
+        Fc = np.array([-10E3]) #checar isso e o gl de aplicação
+        xFc = np.array([3*(n_el_trechos[0]+n_el_trechos[1])-1-1])
+
+        # Condições de Contorno:
+        n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
+        ngl_no = 3
+        ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el,n_nos_tot)
+
+        xCC = np.array([0,1,ngl_tot-3,ngl_tot-2,ngl_tot-1])
+        valor_CC = np.array([0,0,0,0,0])
+        u,reacoes = Frame.deslocamento_reacao(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I,q)
+
+
+    def test7(self):
+        E = 30E6 #lb/in²
+        n_el = 120
+        A = 100*np.ones(n_el) #in²
+        I = 200*np.ones(n_el) #in⁴
+
+        n_nos_el = 2*np.ones(n_el)
+        coord_no = np.array([[0,0],[0,10],[10,10],[10,0]])*12 #12 é conversão de ft pra in
+
+        def q(x):
+            return 0
+
+        n_el_trechos = (np.array([10/30,10/30,10/30])*n_el).round().astype(int)
+
+        for i in range(0,n_el_trechos[0]):
+            I[i+n_el_trechos[0]] = 100
+
+
+        coord_no_trecho1 = np.linspace(coord_no[0,:],coord_no[1,:],n_el_trechos[0]+1)
+        coord_no_trecho2 = np.linspace(coord_no[1,:]+np.array([10*12/n_el_trechos[1],0]),coord_no[2,:],n_el_trechos[1])
+        coord_no_trecho3 = np.linspace(coord_no[2,:]-np.array([0,10*12/n_el_trechos[2]]),coord_no[3,:],n_el_trechos[2])
+        coord_nox = np.append(coord_no_trecho1[:,0],coord_no_trecho2[:,0])
+        coord_nox = np.append(coord_nox[:],coord_no_trecho3[:,0])
+        coord_noy = np.append(coord_no_trecho1[:,1],coord_no_trecho2[:,1])
+        coord_noy = np.append(coord_noy[:],coord_no_trecho3[:,1])
+        coord_no = np.array([coord_nox,coord_noy]).T
+
+
+        # Esforços concentrados/prescritos:
+        Fc = np.array([10E3,-5000]) #checar isso e o gl de aplicação
+        xFc = np.array([3*n_el_trechos[0]-1+1,3*(n_el_trechos[0]+n_el_trechos[1])-1])
+
+        # Condições de Contorno:
+        n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
+        ngl_no = 3
+        ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el,n_nos_tot)
+
+        xCC = np.array([0,1,ngl_tot-3,ngl_tot-2,ngl_tot-1])
+        valor_CC = np.array([0,0,0,0,0])
+        u,reacoes = Frame.deslocamento_reacao(coord_no,n_nos_el,Fc,xFc,xCC,valor_CC,n_el,A,E,I,q)

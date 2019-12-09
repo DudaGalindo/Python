@@ -91,8 +91,8 @@ class Trelica:
         ##plots:
         i = (np.linspace(0,n_nos_tot-1,n_nos_tot)).astype(int)
         coord_no_deformados = np.zeros(coord_no.shape)
-        coord_no_deformados[:,0] = coord_no[:,0] + u[ngl_no*i[:]]*100 #100 é um fator para visualizar a deformação
-        coord_no_deformados[:,1] = coord_no[:,1] + u[ngl_no*i[:]+1]*100
+        coord_no_deformados[:,0] = coord_no[:,0] + u[ngl_no*i[:]]*200 #100 é um fator para visualizar a deformação
+        coord_no_deformados[:,1] = coord_no[:,1] + u[ngl_no*i[:]+1]*200
 
         x = np.zeros(2*n_el);y = np.zeros(2*n_el);xold = np.zeros(2*n_el);yold = np.zeros(2*n_el)
         e = 0

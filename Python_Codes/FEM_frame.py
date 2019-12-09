@@ -15,7 +15,19 @@ class Frame:
 
         return Kel
 
-    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg):
+    def Elem_force(he,q,x1,x2,beta):
+        c = math.cos(beta); s = math.sin(beta)
+        fel = np.array([0,6.,-he,0,6.,he])
+        #rot = np.array([[c,s,0,0,0,0],[-s,c,0,0,0,0],[0,0,1,0,0,0],[0,0,0,c,s,0],[0,0,0,-s,c,0],[0,0,0,0,0,1]])
+        #fel = np.matmul(fel.T,rot)
+        # print(fel)
+        q1 = q(x1)
+        q2 = q(x2)
+        f = (q1+q2)/2
+        Fel = f*he/12*fel
+        return Fel
+
+    def Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg,Fg,q):
         for el in range(0,n_el):
             No1 = int(conec_el[el,0])
             No2 = int(conec_el[el,1])
@@ -24,15 +36,17 @@ class Frame:
             if (coord_no[No2-1,0] - coord_no[No1-1,0])==0:
                 beta = 2*math.atan(1)
             else: beta = math.atan((coord_no[No2-1,1] - coord_no[No1-1,1])/(coord_no[No2-1,0] - coord_no[No1-1,0]))
-            Kel = Frame.Elem(A,E,beta,he,I)
+            Kel = Frame.Elem(A[el],E,beta,he,I[el])
+            Fel = Frame.Elem_force(he,q,coord_no[No1-1,0],coord_no[No2-1,0],beta)
             for i in range(0,ngl_el):
                 ig = int(conec[el,i] - 1)
+                Fg[ig] = Fg[ig] + Fel[i]
                 for j in range(0,ngl_el):
                     jg = int(conec[el,j] - 1)
                     Kg[ig,jg] = Kg[ig,jg] + Kel[i,j]
-        return Kg
+        return Kg,Fg
 
-    def deslocamento_reacao(coord_no,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E,I):
+    def deslocamento_reacao(coord_no,n_nos_el,F,xF,xCC,valor_CC,n_el,A,E,I,q):
         n_nos_tot = general.n_nosTOTAL(n_nos_el,n_el)
         ngl_no = 3
         ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el[0],n_nos_tot)
@@ -44,15 +58,16 @@ class Frame:
 
         Fg[xF[:]] = F[:]
 
-        Kg = Frame.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg)
+        Kg,Fg = Frame.Global(conec,conec_el,n_el,coord_no,ngl_el,A,E,I,Kg,Fg,q)
         Kg_singular,Fg = general.Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg)
         Kg = np.linalg.inv(Kg_singular)
         u = np.matmul(Kg,Fg.T)
         reacao = np.matmul(Kg_singular,u.T)
+
         ##plots:
         i = (np.linspace(0,n_nos_tot-1,n_nos_tot)).astype(int)
-        x = coord_no[:,0] + u[ngl_no*i[:]]*100 #100 é um fator para visualizar a deformação
-        y = coord_no[:,1] + u[ngl_no*i[:]+1]*100
+        x = coord_no[:,0] + u[ngl_no*i[:]]*7 #100 é um fator para visualizar a deformação
+        y = coord_no[:,1] + u[ngl_no*i[:]+1]*7
 
         plt.figure(1)
         plt.plot(x,y)

@@ -61,7 +61,6 @@ class Viga:
         n_nos_el,n_nos_tot,ngl_no = Viga.init(n_el)
         ngl_el, ngl_tot = general.ngl(ngl_no,n_nos_el[0],n_nos_tot)
         conec = general.conect(ngl_tot,n_el,ngl_el,ngl_no)
-
         xe = sp.Symbol('xe'); xe1 = sp.Symbol('xe'); xe2 = sp.Symbol('xe2')
 
         def N1(xe,xe1,xe2):return 1 - 3*((xe-xe1)/(xe2-xe1))**2 + 2*((xe-xe1)/(xe2-xe1))**3
@@ -69,7 +68,7 @@ class Viga:
         def N3(xe,xe1,xe2):return 3*((xe-xe1)/(xe2-xe1))**2 - 2*((xe-xe1)/(xe2-xe1))**3
         def N4(xe,xe1,xe2):return -(xe-xe1)*(((xe-xe1)/(xe2-xe1))**2 - (xe-xe1)/(xe2-xe1))
 
-        def d1N1(xe,xe1,xe2):return -1*(6*(xe-xe1)/((xe2-xe1)**2))*(1-(xe-xe1)/(xe2-xe1))
+        def d1N1(xe,xe1,xe2):return -6*(xe-xe1)/((xe2-xe1)**2)+6*(xe-xe1)**2/(xe2-xe1)**3
         def d1N2(xe,xe1,xe2):return -1*(1+3*((xe-xe1)/(xe2-xe1))**2-4*((xe-xe1)/(xe2-xe1)))
         def d1N3(xe,xe1,xe2):return (6*(xe-xe1)/(xe2-xe1)**2)*(1-(xe-xe1)/(xe2-xe1))
         def d1N4(xe,xe1,xe2):return -1*((xe-xe1)/(xe2-xe1))*((3*((xe-xe1)/(xe2-xe1)))-2)
@@ -95,6 +94,7 @@ class Viga:
             xe = np.linspace(xe1,xe2,n)
 
             we[end:n*(el+1)] = -(N1(xe,xe1,xe2)*u[conec[el,0]-1]+N2(xe,xe1,xe2)*u[conec[el,1]-1]+N3(xe,xe1,xe2)*u[conec[el,2]-1]+N4(xe,xe1,xe2)*u[conec[el,3]-1])
+
             thetae[end:n*(el+1)] = -(d1N1(xe,xe1,xe2)*u[conec[el,0]-1]+d1N2(xe,xe1,xe2)*u[conec[el,1]-1]+
             d1N3(xe,xe1,xe2)*u[conec[el,2]-1]+d1N4(xe,xe1,xe2)*u[conec[el,3]-1])
 
