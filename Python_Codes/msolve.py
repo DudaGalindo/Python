@@ -40,7 +40,7 @@ class Msolve:
         return J
 
 
-    def  Foward_Elimination(J,R):
+    def Foward_Elimination(J,R):
         n = np.size(J[1])
         m = np.size(R[0])
         y = np.zeros((n,m))

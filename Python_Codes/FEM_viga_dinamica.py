@@ -83,20 +83,21 @@ class VigaDin:
 
         ''' Encontrando os autovalores e autovetores '''
         lamb,psi = eig(Kg,Mg)
-        w = lamb**(1/2); w = w.real
-        psi = psi.real
+        w = lamb**(0.5); #w = w.real
+        #psi = psi.real
 
         '''Tornando a matriz modal psi ortonormal à de massa'''
         MgD = (psi.T)@Mg@psi
-
         PSI = np.zeros(psi.shape)
-        for r in range(0,ngl_tot-1):
-            PSI[:,r] = psi[:,r]/(MgD[r,r]**(1/2))
+        for r in range(0,ngl_tot):
+            PSI[:,r] = psi[:,r]/(MgD[r,r])**(0.5)
 
-        ''' pré e pós multiplicando os termos'''
+        ''' Pré e Pós multiplicando os termos'''
         Mg = (PSI.T)@Mg@PSI
         Cg = (PSI.T)@Cg@PSI
         Kg = (PSI.T)@Kg@PSI
+
+        '''Zerando os termos fora das diagonais (já são quase 0)'''
         for i in range(0,ngl_tot):
             for j in range(0,ngl_tot):
                 if j!=i:
@@ -104,10 +105,9 @@ class VigaDin:
                     Kg[i,j] = 0
                     Cg[i,j] = 0
 
-        ## Zerando as colunas que são ínfimas mas podem influenciar
+        ''' Aplicando as condições de contorno novamente ''' # se não fizer isso não da certo
+        Kg,Mg,Cg = VigaDin.Kg_Mg_Cg(xCC,valor_CC,Kg,Mg,Cg,ngl_tot)
 
-        #print(Kg)
-        #print(w**2)
         ''' Setting for plot '''
         X = np.zeros(ngl_tot)
         x = np.linspace(0,1,ngl_tot)
@@ -116,17 +116,17 @@ class VigaDin:
         ax.set_xlim(0, 1)
         ax.set_ylim(-1, 1)
 
-        ''' Computing X'''
+        ''' Computing X '''
         for i in range(0,len(w)):
             D = -((w[i])**2)*Mg + 1j*w[i]*Cg + Kg #solve problem: D is returning as a singular matrix
-            H = PSI*np.linalg.inv(D)*PSI.T
+            H = PSI@np.linalg.inv(D)@PSI.T
             for a in range(0,len(H[:,0])):
                 for b in range(0,len(H[0,:])):
                     H[a,b] = np.linalg.norm(H[a,b])
 
             H = H.real
             X = H@Fg
-            line.set_ydata(X)
+            line.set_ydata(X.T*100)
             fig.canvas.draw_idle()
             fig.canvas.start_event_loop(.05)
             plt.show(block=False)

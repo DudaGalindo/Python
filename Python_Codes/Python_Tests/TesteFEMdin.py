@@ -11,7 +11,7 @@ class TestVigasDinamica(unittest.TestCase):
         ''' Dados de entrada '''
         n_el = 50 #numero de elementos da estrutura
         L = 13*0.305 #m
-        E = 200e9 #constante
+        E = 200e6 #constante
         I = 50e-6 #constante
         rho = 7800
         A = 0.01
