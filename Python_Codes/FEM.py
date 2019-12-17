@@ -30,7 +30,6 @@ class general:
 
     def Kg_Fg(ngl_tot,xCC,valor_CC,Kg,Fg): ##acho que tem como otimizar
         CC = np.zeros(ngl_tot)
-
         for i in range(0,len(xCC)):
             CC[xCC[i]] = 1
             Fg[xCC[i]] = valor_CC[i]
@@ -44,4 +43,5 @@ class general:
                         if CC[j]==0:
                             Fg[j] = Fg[j] - Kg[j,i]*Fg[i]
                             Kg[j,i] = 0
+
         return Kg,Fg
