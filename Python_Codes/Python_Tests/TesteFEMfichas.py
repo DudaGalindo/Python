@@ -71,6 +71,9 @@ class TestVigas(unittest.TestCase):
 
         # Forças Concentradas:
         n_el_trechos = (np.array([8/13,2/13,3/13])*n_el).round().astype(int)
+        n_el_trechos[0] = n_el_trechos[0] - 1
+
+
         xFc = np.array([2*n_el_trechos[0],2*(n_el_trechos[0]+n_el_trechos[1])])
         Fc = np.array([3000,-15000])*4.448
 
