@@ -97,7 +97,6 @@ class solve_one_phase2D:
             if el<nx*ny-nx:T[el,el+4] = kfy[Face2y,el_linha]
             if el>nx-1:T[el,el-4] = kfy[Face1y,el_linha]
 
-
         return T
 
 
