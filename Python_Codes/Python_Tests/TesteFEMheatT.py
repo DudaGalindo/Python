@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot  as plt
+import matplotlib.tri as mtri
 import matplotlib.cm as cm
+import matplotlib
 from ..FEM_HeatTransfer import HeatTransfer
+from scipy.spatial import Delaunay
 import unittest
 
 class test_trabalho(unittest.TestCase):
@@ -11,7 +14,7 @@ class test_trabalho(unittest.TestCase):
         nx = 7 #número de elementos em x
         lx = 1
         ly = 1
-        type_element = 'retangular'
+        type_element = 'triangular'
         f = 0
         K_steel = 52
 
@@ -22,7 +25,6 @@ class test_trabalho(unittest.TestCase):
         x,y = np.meshgrid(coord_x,coord_y)
 
         ''' Condições de Contorno '''
-
         T_CCx = np.linspace(0,nx,nx+1)
         T_CClateralesq = np.zeros(ny)
         for i in range(0,ny):
@@ -43,7 +45,14 @@ class test_trabalho(unittest.TestCase):
             for tj in range(nx+1):
                 Treshape[ti,tj] = T[i+tj]
             m = m+1
-        print('resposta:',Treshape)
-        plt.pcolormesh(x,y,Treshape,cmap = cm.RdGy)
-        plt.colorbar()
-        plt.show()
+        #print('resposta:',Treshape)
+        print('resposta',Treshape)
+        if type_element == 'retangular':
+            plt.pcolormesh(x,y,Treshape,cmap = cm.RdGy)
+            plt.colorbar()
+            plt.show()
+        else:
+            plt.pcolormesh(x,y,Treshape,cmap = cm.RdGy)
+            plt.colorbar()
+            plt.show()
+            matplotlib.axes.Axes.tripcolor(x,y,Treshape,cmap = cm.RdGy)
