@@ -9,7 +9,7 @@ class HeatTransfer:
             self.a12 = 0; self.a21 = 0; self.aoo = 0
             self.x = x; self.y = y
             self.'''
-    def Elem_triang(K,xel,yel):
+    def Elem_triang(K,xel,yel,fel):
         a11 = K
         a22 = K
         a12 = 0; a21 = 0; aoo = 0
@@ -30,7 +30,7 @@ class HeatTransfer:
 
         Kel = 1/(4*Ael)*(a11*beta@beta+a22*gamma@gamma)
         Fel = fel*Ael/3
-        return Kel
+        return Kel,Fel
 
     def Elem_retang(K,lx,ly,fel):
         a11 = K
